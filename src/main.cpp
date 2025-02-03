@@ -17,11 +17,20 @@ constexpr unsigned int BUFFER_SIZE = 256; // Frames per buffer
 
 std::atomic gInputLevel(0.0f);
 
+using namespace ftxui;
+
+struct AudioData {
+    unsigned int inputChannels;
+    unsigned int outputChannels;
+};
+
 int audioCallback(void *outputBuffer, void *inputBuffer, const unsigned int nFrames,
-                  double, const RtAudioStreamStatus status, void *) {
+                  double, const RtAudioStreamStatus status, void *audioData) {
     if (status) {
         std::cout << "Stream over/underflow detected.\n";
     }
+
+    const auto *audioDataIn = static_cast<AudioData *>(audioData);
 
     const auto *in = static_cast<float *>(inputBuffer);
     const auto out = static_cast<float *>(outputBuffer);
@@ -32,12 +41,14 @@ int audioCallback(void *outputBuffer, void *inputBuffer, const unsigned int nFra
         const float inputSample = in[i];
 
         const float absSample = fabs(inputSample);
-        if (absSample > peak) {
-            peak = absSample;
-        }
+        peak = std::max(peak, absSample);
 
-        out[i * 2] = inputSample; // Left channel
-        out[i * 2 + 1] = inputSample; // Right channel
+        if (audioDataIn->outputChannels == 2) {
+            out[i * 2] = inputSample; // Left channel
+            out[i * 2 + 1] = inputSample; // Right channel
+        } else {
+            out[i] = inputSample;
+        }
     }
 
     gInputLevel.store(peak, std::memory_order_relaxed);
@@ -45,11 +56,9 @@ int audioCallback(void *outputBuffer, void *inputBuffer, const unsigned int nFra
     return 0;
 }
 
-using namespace ftxui;
-
-Element levelBar(float level) {
-    int width = 40;
-    int percentage = static_cast<int>(level * width);
+Element levelBar(const float level) {
+    constexpr int width = 40;
+    const int percentage = static_cast<int>(level * width);
 
     std::string filled(percentage, ' ');
     std::string empty(width - percentage, ' ');
@@ -77,16 +86,19 @@ int main() {
     unsigned int inputDeviceId, outputDeviceId;
     std::cout << "Input device id: ";
     std::cin >> inputDeviceId;
-    auto inputParams = ui::selectDevice(inputDeviceId, 1, deviceIds);
+    auto inputParams = ui::selectDevice(inputDeviceId, audio, INPUT);
 
     std::cout << "Output device id: ";
     std::cin >> outputDeviceId;
-    auto outputParams = ui::selectDevice(outputDeviceId, 2, deviceIds);
+    auto outputParams = ui::selectDevice(outputDeviceId, audio, OUTPUT);
+
+    AudioData audioData = { inputParams.nChannels, outputParams.nChannels };
 
     unsigned int bufferFrames = BUFFER_SIZE;
 
     try {
-        audio.openStream(&outputParams, &inputParams, RTAUDIO_FLOAT32, SAMPLE_RATE, &bufferFrames, &audioCallback);
+        audio.openStream(&outputParams, &inputParams, RTAUDIO_FLOAT32, SAMPLE_RATE, &bufferFrames, &audioCallback,
+                         &audioData);
         audio.startStream();
     } catch (RtAudioErrorType &e) {
         std::cerr << e << std::endl;
@@ -95,14 +107,13 @@ int main() {
 
     auto screen = ScreenInteractive::Fullscreen();
 
-    float progress = 0.0f;
+    float level = 0.0f;
     std::atomic running = true;
 
     const auto renderer = Renderer([&] {
         return vbox({
                    filler(),
-                   hbox({filler(), text("input level: "), levelBar(progress), filler()}),
-                   hbox({filler(), text("output level: "), levelBar(progress), filler()}),
+                   hbox({filler(), text("input level: "), levelBar(level), filler()}),
                    filler(),
                }) | border | center;
     });
@@ -112,14 +123,14 @@ int main() {
             const float currentLevel = gInputLevel.load(std::memory_order_relaxed);
 
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
-            progress = currentLevel;
+            level = currentLevel;
             screen.PostEvent(Event::Custom);
         }
     });
 
     const auto eventWrapper = CatchEvent(renderer, [&](const Event &event) {
-        // exit when enter pressed
-        if (event == Event::Return) {
+        // exit when Return pressed or Ctrl + C
+        if (event == Event::Return || event == Event::CtrlC) {
             screen.ExitLoopClosure()();
             running = false;
             return true;
