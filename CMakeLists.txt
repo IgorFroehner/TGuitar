@@ -7,5 +7,6 @@ set(CMAKE_CXX_STANDARD 17)
 find_package(RtAudio REQUIRED)
 find_package(ftxui REQUIRED)
 
+include_directories(${PROJECT_SOURCE_DIR}/include)
 
 add_subdirectory(src)

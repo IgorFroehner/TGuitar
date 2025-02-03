@@ -1,0 +1,4 @@
+#ifndef TERMINALUI_H
+#define TERMINALUI_H
+
+#endif //TERMINALUI_H

@@ -1,10 +1,17 @@
 
-set(SOURCES main.cpp)
+set(SOURCES
+    main.cpp
+    audio/AudioProcessor.cpp
+    ui/InitialMenu.cpp
+)
 
 add_executable(tguitar ${SOURCES})
 
 target_link_libraries(tguitar
     RtAudio::rtaudio
+    ftxui::screen
+    ftxui::dom
+    ftxui::component # Not needed for this example.
 )
 
 target_include_directories(tguitar
