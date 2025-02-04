@@ -1,3 +1,9 @@
+/*
+ * Copyright (c) 2025 Igor Froehner. All rights reserved.
+ * Use of this source code is governed by the MIT license that can be found in
+ * the LICENSE file.
+ */
+
 #ifndef INITIAL_MENU_H
 #define INITIAL_MENU_H
 
@@ -28,29 +34,45 @@ namespace ui {
         std::cout << std::endl;
     }
 
-
-    inline RtAudio::StreamParameters selectDevice(const unsigned int deviceId, RtAudio &audio, DeviceType deviceType) {
-        const auto deviceIds = audio.getDeviceIds();
-
-        if (std::find(deviceIds.begin(), deviceIds.end(), deviceId) == deviceIds.end()) {
+    static RtAudio::StreamParameters selectDevice(const unsigned int deviceId, RtAudio &audio,
+                                                  const DeviceType deviceType) {
+        if (const auto deviceIds = audio.getDeviceIds();
+            std::find(deviceIds.begin(), deviceIds.end(), deviceId) == deviceIds.end()) {
             throw std::runtime_error("Device not found!");
         }
 
-        auto deviceInfo = audio.getDeviceInfo(deviceId);
+        const auto deviceInfo = audio.getDeviceInfo(deviceId);
 
         RtAudio::StreamParameters deviceParams;
 
         deviceParams.deviceId = deviceId;
-        if (deviceType == INPUT) {
-            deviceParams.nChannels = deviceInfo.inputChannels;
-        } else if (deviceType == OUTPUT) {
-            deviceParams.nChannels = deviceInfo.outputChannels;
+        switch (deviceType) {
+            case INPUT:
+                deviceParams.nChannels = deviceInfo.inputChannels;
+                break;
+            case OUTPUT:
+                deviceParams.nChannels = deviceInfo.outputChannels;
+                break;
         }
 
         deviceParams.firstChannel = 0;
 
         return deviceParams;
     }
+
+    inline std::pair<RtAudio::StreamParameters, RtAudio::StreamParameters> selectDevices(RtAudio &audio) {
+        unsigned int inputDeviceId, outputDeviceId;
+
+        std::cout << "Input device id: ";
+        std::cin >> inputDeviceId;
+        auto inputParams = selectDevice(inputDeviceId, audio, INPUT);
+
+        std::cout << "Output device id: ";
+        std::cin >> outputDeviceId;
+        auto outputParams = selectDevice(outputDeviceId, audio, OUTPUT);
+
+        return std::make_pair(inputParams, outputParams);
+    }
 }
 
-#endif //INITIALMENU_H
+#endif //INITIAL_MENU_H

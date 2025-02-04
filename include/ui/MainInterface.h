@@ -4,4 +4,7 @@
  * the LICENSE file.
  */
 
-#include "ui/InitialMenu.h"
+#ifndef MAIN_INTERFACE_H
+#define MAIN_INTERFACE_H
+
+#endif //MAIN_INTERFACE_H

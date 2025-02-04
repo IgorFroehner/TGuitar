@@ -1,3 +1,9 @@
+/*
+ * Copyright (c) 2025 Igor Froehner. All rights reserved.
+ * Use of this source code is governed by the MIT license that can be found in
+ * the LICENSE file.
+ */
+
 #include <iostream>
 #include <vector>
 #include <rtaudio/RtAudio.h>
@@ -81,18 +87,9 @@ int main() {
 
     ui::printDevicesAvailable(audio);
 
-    const auto deviceIds = audio.getDeviceIds();
+    auto [inputParams, outputParams] = ui::selectDevices(audio);
 
-    unsigned int inputDeviceId, outputDeviceId;
-    std::cout << "Input device id: ";
-    std::cin >> inputDeviceId;
-    auto inputParams = ui::selectDevice(inputDeviceId, audio, INPUT);
-
-    std::cout << "Output device id: ";
-    std::cin >> outputDeviceId;
-    auto outputParams = ui::selectDevice(outputDeviceId, audio, OUTPUT);
-
-    AudioData audioData = { inputParams.nChannels, outputParams.nChannels };
+    auto audioData = AudioData{inputParams.nChannels, outputParams.nChannels};
 
     unsigned int bufferFrames = BUFFER_SIZE;
 

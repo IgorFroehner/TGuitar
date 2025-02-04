@@ -4,4 +4,6 @@
  * the LICENSE file.
  */
 
-#include "ui/InitialMenu.h"
+namespace ui {
+
+}
