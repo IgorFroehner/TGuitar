@@ -4,7 +4,13 @@
  * the LICENSE file.
  */
 
-#ifndef MAIN_INTERFACE_H
-#define MAIN_INTERFACE_H
+#ifndef GLOBAL_STATE_HPP
+#define GLOBAL_STATE_HPP
 
-#endif //MAIN_INTERFACE_H
+#include <atomic>
+
+namespace globals {
+    inline std::atomic<float> gInputLevel{0.0};
+}
+
+#endif //GLOBAL_STATE_HPP
