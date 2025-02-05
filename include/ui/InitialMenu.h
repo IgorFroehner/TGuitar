@@ -48,7 +48,7 @@ namespace ui {
         deviceParams.deviceId = deviceId;
         switch (deviceType) {
             case INPUT:
-                deviceParams.nChannels = deviceInfo.inputChannels;
+                deviceParams.nChannels = 1; // TODO: change this when it handles stereo input
                 break;
             case OUTPUT:
                 deviceParams.nChannels = deviceInfo.outputChannels;

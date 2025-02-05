@@ -1,8 +1,8 @@
 
 set(SOURCES
         main.cpp
-        Globals.hpp
         audio/AudioProcessor.cpp
+        audio/AudioData.cpp
         ui/InitialMenu.cpp
         ui/MainInterface.cpp
 )

@@ -21,7 +21,7 @@ namespace ui {
         void start();
 
     private:
-        float level;
+        std::atomic<float> level;
         std::atomic<bool> running;
         ftxui::ScreenInteractive screen;
 

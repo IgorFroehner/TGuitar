@@ -4,6 +4,7 @@
  * the LICENSE file.
  */
 
+#include <audio/AudioData.h>
 #include <ftxui/component/component.hpp>
 
 #include "ui/TGuitarUI.h"
@@ -34,6 +35,8 @@ namespace ui {
             }
             return false;
         });
+
+        running = true;
 
         // Start a thread to update the level periodically.
         std::thread updater(&TGuitarUI::UpdateLoop, this);
@@ -80,7 +83,7 @@ namespace ui {
         using namespace std::chrono;
         while (running) {
             // Simulate reading an updated level.
-            float currentLevel = globals::gInputLevel.load(std::memory_order_relaxed);
+            const float currentLevel = audio::inputLevel.load(std::memory_order_relaxed);
 
             std::this_thread::sleep_for(milliseconds(100));
             level = currentLevel;

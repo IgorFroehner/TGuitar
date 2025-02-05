@@ -10,8 +10,8 @@
 #include <random>
 
 #include <ui/TGuitarUI.h>
-#include "ui/InitialMenu.h"
-#include "Globals.hpp"
+#include <ui/InitialMenu.h>
+#include <audio/AudioData.h>
 
 constexpr unsigned int SAMPLE_RATE = 48000; // 44.1 kHz (CD quality)
 constexpr unsigned int BUFFER_SIZE = 256; // Frames per buffer
@@ -48,7 +48,7 @@ int audioCallback(void *outputBuffer, void *inputBuffer, const unsigned int nFra
         }
     }
 
-    globals::gInputLevel.store(peak, std::memory_order_relaxed);
+    audio::inputLevel.store(peak, std::memory_order_relaxed);
 
     return 0;
 }
@@ -58,7 +58,7 @@ int main() {
 
     if (audio.getDeviceCount() < 1) {
         std::cout << "No audio devices found!\n";
-        return 1;
+        return EXIT_FAILURE;
     }
 
     ui::printDevicesAvailable(audio);
@@ -75,7 +75,7 @@ int main() {
         audio.startStream();
     } catch (RtAudioErrorType &e) {
         std::cerr << e << std::endl;
-        return 1;
+        return EXIT_FAILURE;
     }
 
     auto ui = new ui::TGuitarUI();
@@ -89,5 +89,5 @@ int main() {
 
     if (audio.isStreamOpen()) audio.closeStream();
 
-    return 0;
+    return EXIT_SUCCESS;
 }
