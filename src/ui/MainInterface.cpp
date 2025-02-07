@@ -8,10 +8,9 @@
 #include <ftxui/component/component.hpp>
 
 #include "ui/TGuitarUI.h"
-#include "../Globals.hpp"
 
 namespace ui {
-    TGuitarUI::TGuitarUI() : level(0.0f), running(false), screen(ftxui::ScreenInteractive::Fullscreen()) {
+    TGuitarUI::TGuitarUI() : input_level(0.0f), running(false), screen(ftxui::ScreenInteractive::Fullscreen()) {
     }
 
     TGuitarUI::~TGuitarUI() = default;
@@ -19,14 +18,14 @@ namespace ui {
     void TGuitarUI::start() {
         using namespace ftxui;
 
-        auto renderer = Renderer([this] {
+        const auto renderer = Renderer([this] {
             return vbox({
                 Header(),
                 filler()
             });
         });
 
-        auto eventWrapper = CatchEvent(renderer, [this](const Event &event) {
+        const auto eventWrapper = CatchEvent(renderer, [this](const Event &event) {
             if (event == Event::Return || event == Event::CtrlC ||
                 event == Event::Character('q')) {
                 screen.ExitLoopClosure()();
@@ -67,8 +66,8 @@ namespace ui {
                            ) | border;
 
         auto header_right = hbox({
-                                text("in: "), levelBar(level),
-                                text("out: "), levelBar(level)
+                                text("in: "), levelBar(input_level),
+                                text("out: "), levelBar(output_level)
                             })
                             | center | border | flex;
 
@@ -78,15 +77,17 @@ namespace ui {
                }) | size(HEIGHT, EQUAL, 3);
     }
 
-    // Update loop that periodically reads gInputLevel and refreshes the UI.
     void TGuitarUI::UpdateLoop() {
         using namespace std::chrono;
         while (running) {
             // Simulate reading an updated level.
-            const float currentLevel = audio::inputLevel.load(std::memory_order_relaxed);
+            const float currentInputLevel = audio::inputLevel.load(std::memory_order_relaxed);
+            const float currentOutputLevel = audio::outputLevel.load(std::memory_order_relaxed);
 
             std::this_thread::sleep_for(milliseconds(100));
-            level = currentLevel;
+            input_level = currentInputLevel;
+            output_level = currentOutputLevel;
+
             screen.PostEvent(ftxui::Event::Custom);
         }
     }

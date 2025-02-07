@@ -6,6 +6,9 @@
 
 #ifndef AUDIO_PROCESSOR_H
 #define AUDIO_PROCESSOR_H
+#include <vector>
+
+#include "Effect.h"
 
 namespace audio {
     class AudioProcessor final {
@@ -14,9 +17,11 @@ namespace audio {
 
         ~AudioProcessor();
 
-        void helloWorld();
+        void applyEffects(unsigned int nFrames, float *buffer) const;
 
-        void process(int nFrames, float *input, float *output);
+        void addEffect(std::unique_ptr<Effect> effect);
+    private:
+        std::vector<std::unique_ptr<Effect> > effects;
     };
 }
 

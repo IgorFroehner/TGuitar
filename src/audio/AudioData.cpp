@@ -10,4 +10,5 @@
 
 namespace audio {
     std::atomic inputLevel{0.0f};
+    std::atomic outputLevel{0.0f};
 }

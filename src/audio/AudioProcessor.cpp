@@ -8,26 +8,17 @@
 #include <iostream>
 
 namespace audio {
-    // Constructor implementation
-    AudioProcessor::AudioProcessor() {
-        // Constructor code here, if needed.
-        std::cout << "AudioProcessor created." << std::endl;
-    }
+    AudioProcessor::AudioProcessor() = default;
 
-    // Destructor implementation
-    AudioProcessor::~AudioProcessor() {
-        // Destructor code here, if needed.
-        std::cout << "AudioProcessor destroyed." << std::endl;
-    }
+    AudioProcessor::~AudioProcessor() = default;
 
-
-    void AudioProcessor::process(int nFrames, float *input, float *output) {
-        for (int i = 0; i < nFrames; i++) {
-            output[i] = input[i] + input[i + nFrames];
+    void AudioProcessor::applyEffects(const unsigned int nFrames, float *buffer) const {
+        for (const auto& effect: effects) {
+            effect->process(nFrames, buffer);
         }
     }
 
-    void AudioProcessor::helloWorld() {
-        std::cout << "Hello World!" << std::endl;
+    void AudioProcessor::addEffect(std::unique_ptr<Effect> effect) {
+        effects.push_back(std::move(effect));
     }
 }

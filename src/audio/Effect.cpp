@@ -4,13 +4,12 @@
  * the LICENSE file.
  */
 
-#ifndef AUDIODATA_H
-#define AUDIODATA_H
-#include <atomic>
+#include "audio/Effect.h"
 
 namespace audio {
-    extern std::atomic<float> inputLevel;
-    extern std::atomic<float> outputLevel;
-}
+    Effect::Effect() = default;
 
-#endif //AUDIODATA_H
+    Effect::~Effect() = default;
+
+    void Effect::process(unsigned int nFrames, float *in) {}
+}

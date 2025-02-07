@@ -12,14 +12,28 @@
 #include <ui/TGuitarUI.h>
 #include <ui/InitialMenu.h>
 #include <audio/AudioData.h>
+#include <audio/AudioProcessor.h>
+#include <audio/DistortionEffect.h>
 
 constexpr unsigned int SAMPLE_RATE = 48000; // 44.1 kHz (CD quality)
 constexpr unsigned int BUFFER_SIZE = 256; // Frames per buffer
+
+audio::AudioProcessor processor;
 
 struct AudioData {
     unsigned int inputChannels;
     unsigned int outputChannels;
 };
+
+float clip(const float sample) {
+    if (sample > 1.0f) {
+        return 1.0f;
+    }
+    if (sample < -1.0f) {
+        return -1.0f;
+    }
+    return sample;
+}
 
 int audioCallback(void *outputBuffer, void *inputBuffer, const unsigned int nFrames,
                   double, const RtAudioStreamStatus status, void *audioData) {
@@ -29,26 +43,36 @@ int audioCallback(void *outputBuffer, void *inputBuffer, const unsigned int nFra
 
     const auto *audioDataIn = static_cast<AudioData *>(audioData);
 
-    const auto *in = static_cast<float *>(inputBuffer);
+    auto *in = static_cast<float *>(inputBuffer);
     const auto out = static_cast<float *>(outputBuffer);
 
     float peak = 0.0f;
 
     for (unsigned int i = 0; i < nFrames; i++) {
-        const float inputSample = in[i];
-
-        const float absSample = fabs(inputSample);
+        const float absSample = fabs(in[i]);
         peak = std::max(peak, absSample);
+    }
+
+    audio::inputLevel.store(peak, std::memory_order_relaxed);
+
+    processor.applyEffects(nFrames, in);
+    float peakOut = 0.0f;
+
+    for (unsigned int i = 0; i < nFrames; i++) {
+        const float inputSample = clip(in[i]);
+
+        float absOutSample = fabs(inputSample);
+        peakOut = std::max(peakOut, absOutSample);
 
         if (audioDataIn->outputChannels == 2) {
-            out[i * 2] = inputSample; // Left channel
-            out[i * 2 + 1] = inputSample; // Right channel
+            out[i * 2] = inputSample;
+            out[i * 2 + 1] = inputSample;
         } else {
             out[i] = inputSample;
         }
     }
 
-    audio::inputLevel.store(peak, std::memory_order_relaxed);
+    audio::outputLevel.store(peakOut, std::memory_order_relaxed);
 
     return 0;
 }
@@ -69,6 +93,10 @@ int main() {
 
     unsigned int bufferFrames = BUFFER_SIZE;
 
+    auto distortion = audio::DistortionEffect(1.0f);
+
+    processor.addEffect(std::make_unique<audio::DistortionEffect>(distortion));
+
     try {
         audio.openStream(&outputParams, &inputParams, RTAUDIO_FLOAT32, SAMPLE_RATE, &bufferFrames, &audioCallback,
                          &audioData);
@@ -78,7 +106,7 @@ int main() {
         return EXIT_FAILURE;
     }
 
-    auto ui = new ui::TGuitarUI();
+    const auto ui = new ui::TGuitarUI();
     ui->start();
 
     try {

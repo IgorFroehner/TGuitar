@@ -3,6 +3,8 @@ set(SOURCES
         main.cpp
         audio/AudioProcessor.cpp
         audio/AudioData.cpp
+        audio/Effect.cpp
+        audio/DistortionEffect.cpp
         ui/InitialMenu.cpp
         ui/MainInterface.cpp
 )
