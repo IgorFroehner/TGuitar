@@ -26,12 +26,8 @@ struct AudioData {
 };
 
 float clip(const float sample) {
-    if (sample > 1.0f) {
-        return 1.0f;
-    }
-    if (sample < -1.0f) {
-        return -1.0f;
-    }
+    if (sample > 1.0f) return 1.0f;
+    if (sample < -1.0f) return -1.0f;
     return sample;
 }
 
