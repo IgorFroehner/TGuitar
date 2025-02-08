@@ -13,10 +13,8 @@
 #include <ui/InitialMenu.h>
 #include <audio/AudioData.h>
 #include <audio/AudioProcessor.h>
+#include <audio/DelayEffect.h>
 #include <audio/DistortionEffect.h>
-
-constexpr unsigned int SAMPLE_RATE = 48000; // 44.1 kHz (CD quality)
-constexpr unsigned int BUFFER_SIZE = 256; // Frames per buffer
 
 audio::AudioProcessor processor;
 
@@ -92,6 +90,10 @@ int main() {
     auto distortion = audio::DistortionEffect(1.0f);
 
     processor.addEffect(std::make_unique<audio::DistortionEffect>(distortion));
+
+    auto delay = audio::DelayEffect(0.2, 0.2);
+
+    processor.addEffect(std::make_unique<audio::DelayEffect>(delay));
 
     try {
         audio.openStream(&outputParams, &inputParams, RTAUDIO_FLOAT32, SAMPLE_RATE, &bufferFrames, &audioCallback,

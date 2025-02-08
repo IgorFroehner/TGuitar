@@ -8,6 +8,9 @@
 #define AUDIODATA_H
 #include <atomic>
 
+constexpr unsigned int SAMPLE_RATE = 48000; // 44.1 kHz (CD quality)
+constexpr unsigned int BUFFER_SIZE = 256; // Frames per buffer
+
 namespace audio {
     extern std::atomic<float> inputLevel;
     extern std::atomic<float> outputLevel;

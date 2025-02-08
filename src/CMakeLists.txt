@@ -5,6 +5,7 @@ set(SOURCES
         audio/AudioData.cpp
         audio/Effect.cpp
         audio/DistortionEffect.cpp
+        audio/DelayEffect.cpp
         ui/InitialMenu.cpp
         ui/MainInterface.cpp
 )

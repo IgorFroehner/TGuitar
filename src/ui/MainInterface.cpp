@@ -10,7 +10,8 @@
 #include "ui/TGuitarUI.h"
 
 namespace ui {
-    TGuitarUI::TGuitarUI() : input_level(0.0f), running(false), screen(ftxui::ScreenInteractive::Fullscreen()) {
+    TGuitarUI::TGuitarUI() : input_level(0.0f), output_level(0.0f), running(false),
+                             screen(ftxui::ScreenInteractive::Fullscreen()) {
     }
 
     TGuitarUI::~TGuitarUI() = default;
@@ -62,12 +63,12 @@ namespace ui {
     ftxui::Element TGuitarUI::Header() const {
         using namespace ftxui;
         auto header_left = hbox(
-                               text("TGuitar") | center | bold | size(WIDTH, EQUAL, 40)
+                               text("🎸 TGuitar") | center | bold | size(WIDTH, EQUAL, 40)
                            ) | border;
 
         auto header_right = hbox({
-                                text("in: "), levelBar(input_level),
-                                text("out: "), levelBar(output_level)
+                                text("🎤in: "), levelBar(input_level),
+                                text("🔈out: "), levelBar(output_level)
                             })
                             | center | border | flex;
 

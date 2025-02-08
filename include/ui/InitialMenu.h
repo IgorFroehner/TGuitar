@@ -48,9 +48,17 @@ namespace ui {
         deviceParams.deviceId = deviceId;
         switch (deviceType) {
             case INPUT:
+                if (deviceInfo.inputChannels <= 0) {
+                    throw std::runtime_error("Device selected has no input channels specified!");
+                }
+
                 deviceParams.nChannels = 1; // TODO: change this when it handles stereo input
                 break;
             case OUTPUT:
+                if (deviceInfo.outputChannels <= 0) {
+                    throw std::runtime_error("Device selected has no output channels specified!");
+                }
+
                 deviceParams.nChannels = deviceInfo.outputChannels;
                 break;
         }

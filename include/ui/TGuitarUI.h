@@ -27,6 +27,7 @@ namespace ui {
         ftxui::ScreenInteractive screen;
 
         ftxui::Element Header() const;
+        ftxui::Element page() const;
 
         void UpdateLoop();
     };
