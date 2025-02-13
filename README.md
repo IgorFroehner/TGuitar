@@ -16,7 +16,7 @@ Play guitar like a hacker.
   - [ ] Distortion 
   - [ ] EQ
   - [ ] Boost
-  - [ ] Delay
+  - [x] Delay
   - [ ] Reverb
   - [ ] Compressor
   - [ ] Filter

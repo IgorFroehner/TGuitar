@@ -21,7 +21,8 @@ namespace audio {
         void process(unsigned int nFrames, float *in) override;
 
     private:
-        float _timbre;
+        float timbre_ = 1.0f;
+        float depth_ = 1.0f;
     };
 }
 

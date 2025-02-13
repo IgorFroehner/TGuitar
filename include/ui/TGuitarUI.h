@@ -12,6 +12,27 @@
 #include <ftxui/dom/elements.hpp>
 
 namespace ui {
+    class Graph {
+    public:
+        Graph() {}
+
+        std::vector<int> operator()(int width, int height) const {
+            std::vector<int> output(width);
+            for (int i = 0; i < width; ++i) {
+                float v = 0;
+                v += 0.1f * sin((i + shift) * 0.1f);        // NOLINT
+                v += 0.2f * sin((i + shift + 10) * 0.15f);  // NOLINT
+                v += 0.1f * sin((i + shift) * 0.03f);       // NOLINT
+                v *= height;                                // NOLINT
+                v += 0.5f * height;                         // NOLINT
+                output[i] = static_cast<int>(v);
+            }
+            return output;
+        }
+        std::vector<double> data;
+        int shift = 0;
+    };
+
     class TGuitarUI {
     public:
         TGuitarUI();
@@ -27,9 +48,15 @@ namespace ui {
         ftxui::ScreenInteractive screen;
 
         ftxui::Element Header() const;
-        ftxui::Element page() const;
+        ftxui::Element Body() const;
+        ftxui::Element Footer() const;
+
+        void computeFFT(const std::vector<float> &samplesBlock) const;
+
+        ftxui::Element theGraph() const;
 
         void UpdateLoop();
+        Graph my_graph;
     };
 }
 

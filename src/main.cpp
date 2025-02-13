@@ -16,6 +16,8 @@
 #include <audio/DelayEffect.h>
 #include <audio/DistortionEffect.h>
 
+// #include <fftw3.h>
+
 audio::AudioProcessor processor;
 
 struct AudioData {
@@ -58,6 +60,12 @@ int audioCallback(void *outputBuffer, void *inputBuffer, const unsigned int nFra
         float absOutSample = fabs(inputSample);
         peakOut = std::max(peakOut, absOutSample);
 
+        // fftBuffer.push_back(inputSample);
+        //
+        // if (fftBuffer.size() >= FFT_SIZE) {
+        //     audio::fftReady.store(true, std::memory_order_relaxed);
+        // }
+
         if (audioDataIn->outputChannels == 2) {
             out[i * 2] = inputSample;
             out[i * 2 + 1] = inputSample;
@@ -87,9 +95,9 @@ int main() {
 
     unsigned int bufferFrames = BUFFER_SIZE;
 
-    auto distortion = audio::DistortionEffect(1.0f);
-
-    processor.addEffect(std::make_unique<audio::DistortionEffect>(distortion));
+    // auto distortion = audio::DistortionEffect(1.0f);
+    //
+    // processor.addEffect(std::make_unique<audio::DistortionEffect>(distortion));
 
     auto delay = audio::DelayEffect(0.2, 0.2);
 

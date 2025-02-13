@@ -9,17 +9,17 @@
 #include <cmath>
 
 namespace audio {
-    DistortionEffect::DistortionEffect(const float timbre) : _timbre(timbre) {
+    DistortionEffect::DistortionEffect(const float timbre) : timbre_(timbre) {
     }
 
     void DistortionEffect::setTimbre(const float timbre) {
-        _timbre = timbre;
+        timbre_ = timbre;
     }
 
     void DistortionEffect::process(const unsigned int nFrames, float *in) {
-        float depth = 1.0f;
-        float timbre = _timbre;
-        float timbreInverse = (1 - (timbre * 0.099f)) * 10;
+        const float depth = depth_;
+        const float timbre = timbre_;
+        const float timbreInverse = (1 - (timbre * 0.099f)) * 10;
         for (int i = 0; i < nFrames; i++) {
             in[i] = in[i] * depth;
             in[i] = tanh((in[i] * (timbre + 1.0f)));

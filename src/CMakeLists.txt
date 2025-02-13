@@ -7,7 +7,7 @@ set(SOURCES
         audio/DistortionEffect.cpp
         audio/DelayEffect.cpp
         ui/InitialMenu.cpp
-        ui/MainInterface.cpp
+        ui/TGuitarUI.cpp
 )
 
 add_executable(tguitar ${SOURCES})
@@ -17,11 +17,13 @@ target_link_libraries(tguitar
         ftxui::screen
         ftxui::dom
         ftxui::component # Not needed for this example.
+#        ${FFTW3_LIBRARIES}
 )
 
 target_include_directories(tguitar
         PRIVATE
         ${RtAudio_INCLUDE_DIRS}
         ${ftxui_INCLUDE_DIRS}
+#        ${FFTW3_INCLUDE_DIRS}
         ${PROJECT_SOURCE_DIR}/include
 )
