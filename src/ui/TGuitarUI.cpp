@@ -4,12 +4,13 @@
  * the LICENSE file.
  */
 
-#include <audio/AudioData.h>
 #include <ftxui/component/component.hpp>
-
-#include "ui/TGuitarUI.h"
-
+#include <complex>
 #include <iostream>
+
+#include <audio/AudioData.h>
+#include <ui/TGuitarUI.h>
+#include <math/dj_fft.h>
 
 namespace ui {
     ftxui::Element TGuitarUI::theGraph() const {
@@ -119,38 +120,44 @@ namespace ui {
         return vbox({}) | size(HEIGHT, EQUAL, 1);
     }
 
-    // void TGuitarUI::computeFFT(const std::vector<float> &samplesBlock) const {
-    //     // Ensure samplesBlock has at least FFT_SIZE samples
-    //     if (samplesBlock.size() < FFT_SIZE) {
-    //         std::cerr << "Not enough samples for FFT" << std::endl;
-    //         return;
-    //     }
-    //
-    //     // 3. Fill the input buffer, applying a window function (Hann window)
-    //     for (int i = 0; i < FFT_SIZE; i++) {
-    //         double hannWindow = 0.5 * (1 - cos((2 * M_PI * i) / (FFT_SIZE - 1)));
-    //         fftInput[i] = samplesBlock[i] * hannWindow;
-    //     }
-    //
-    //     // 4. Execute the FFT
-    //     fftw_execute(fftPlan);
-    //
-    //     // 5. Process the FFT output: compute magnitude for each bin
-    //     // The output is an array of FFT_SIZE/2+1 complex numbers.
-    //     std::vector<double> magnitudes(FFT_SIZE / 2 + 1);
-    //     for (int k = 0; k <= FFT_SIZE / 2; k++) {
-    //         double real = fftOutput[k][0];
-    //         double imag = fftOutput[k][1];
-    //         magnitudes[k] = std::sqrt(real * real + imag * imag);
-    //     }
-    //
-    //     std::vector<double> decibels(FFT_SIZE / 2 + 1);
-    //     for (int k = 0; k <= FFT_SIZE / 2; k++) {
-    //         decibels[k] = (magnitudes[k] > 1e-10) ? 20 * log10(magnitudes[k]) : -100;
-    //     }
-    //
-    //     my_graph.data = decibels;
-    // }
+    void TGuitarUI::computeFFT(const std::vector<float> &samplesBlock) {
+        // Ensure samplesBlock has at least FFT_SIZE samples
+        if (samplesBlock.size() < FFT_SIZE) {
+            std::cerr << "Not enough samples for FFT" << std::endl;
+            return;
+        }
+
+        std::vector<std::complex<float>> fftInput;
+        fftInput.reserve(FFT_SIZE);
+
+        // 3. Fill the input buffer, applying a window function (Hann window)
+        for (size_t i = 0; i < FFT_SIZE; i++) {
+            double hannWindow = 0.5 * (1 - cos((2.0f * M_PI * static_cast<float>(i)) / (FFT_SIZE - 1)));
+            fftInput.emplace_back(samplesBlock[i] * hannWindow);
+        }
+
+        // 4. Execute the FFT
+        auto fftResult = fft1d(fftInput, dj::fft_dir::DIR_FWD);
+
+        // 5. Process the FFT output: compute magnitude for each bin
+        // The output is an array of FFT_SIZE/2+1 complex numbers.
+        my_graph_.data.clear();
+        float max = -1.0f;
+        for (size_t i = 0; i < FFT_SIZE / 2 + 1; i++) {
+            float magnitude = std::abs(fftResult[i]);
+            max = std::max(max, magnitude);
+            my_graph_.data.push_back(magnitude);
+        }
+
+        my_graph_.max = max;
+
+        // std::vector<double> decibels(FFT_SIZE / 2 + 1);
+        // for (int k = 0; k <= FFT_SIZE / 2; k++) {
+        //     decibels[k] = (magnitudes[k] > 1e-10) ? 20 * log10(magnitudes[k]) : -100;
+        // }
+
+        // my_graph_.data = fftResult;
+    }
 
     void TGuitarUI::UpdateLoop() {
         using namespace std::chrono;
@@ -162,14 +169,12 @@ namespace ui {
             input_level_ = current_input_level;
             output_level_ = current_output_level;
 
-            my_graph_.shift++;
+            if (audio::g_FFTReady.load(std::memory_order_relaxed)) {
+                computeFFT(audio::g_FFTBuffer);
 
-            // if (audio::fftReady.load(std::memory_order_relaxed)) {
-            //     computeFFT(fftBuffer);
-            //
-            //     audio::fftReady.store(false,std::memory_order_relaxed);
-            //     fftBuffer.clear();
-            // }
+                audio::g_FFTReady.store(false,std::memory_order_relaxed);
+                audio::g_FFTBuffer.clear();
+            }
 
             screen.PostEvent(ftxui::Event::Custom);
         }

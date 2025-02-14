@@ -37,7 +37,7 @@ int audioCallback(void *outputBuffer, void *inputBuffer, const unsigned int nFra
         std::cout << "Stream over/underflow detected.\n";
     }
 
-    const auto *audioDataIn = static_cast<AudioData *>(audioData);
+    const auto *audio_data_in = static_cast<AudioData *>(audioData);
 
     auto *in = static_cast<float *>(inputBuffer);
     const auto out = static_cast<float *>(outputBuffer);
@@ -45,36 +45,36 @@ int audioCallback(void *outputBuffer, void *inputBuffer, const unsigned int nFra
     float peak = 0.0f;
 
     for (unsigned int i = 0; i < nFrames; i++) {
-        const float absSample = fabs(in[i]);
-        peak = std::max(peak, absSample);
+        const float abs_sample = fabs(in[i]);
+        peak = std::max(peak, abs_sample);
     }
 
     audio::inputLevel.store(peak, std::memory_order_relaxed);
 
     processor.applyEffects(nFrames, in);
-    float peakOut = 0.0f;
+    float peak_out = 0.0f;
 
     for (unsigned int i = 0; i < nFrames; i++) {
-        const float inputSample = clip(in[i]);
+        const float input_sample = clip(in[i]);
 
-        float absOutSample = fabs(inputSample);
-        peakOut = std::max(peakOut, absOutSample);
+        float abs_out_sample = fabs(input_sample);
+        peak_out = std::max(peak_out, abs_out_sample);
 
-        // fftBuffer.push_back(inputSample);
-        //
-        // if (fftBuffer.size() >= FFT_SIZE) {
-        //     audio::fftReady.store(true, std::memory_order_relaxed);
-        // }
+        audio::g_FFTBuffer.push_back(input_sample);
 
-        if (audioDataIn->outputChannels == 2) {
-            out[i * 2] = inputSample;
-            out[i * 2 + 1] = inputSample;
+        if (audio::g_FFTBuffer.size() >= FFT_SIZE) {
+            audio::g_FFTReady.store(true, std::memory_order_relaxed);
+        }
+
+        if (audio_data_in->outputChannels == 2) {
+            out[i * 2] = input_sample;
+            out[i * 2 + 1] = input_sample;
         } else {
-            out[i] = inputSample;
+            out[i] = input_sample;
         }
     }
 
-    audio::outputLevel.store(peakOut, std::memory_order_relaxed);
+    audio::outputLevel.store(peak_out, std::memory_order_relaxed);
 
     return 0;
 }
@@ -95,9 +95,9 @@ int main() {
 
     unsigned int buffer_frames = BUFFER_SIZE;
 
-    // auto distortion = audio::DistortionEffect(1.0f);
-    //
-    // processor.addEffect(std::make_unique<audio::DistortionEffect>(distortion));
+    auto distortion = audio::DistortionEffect(1.0f);
+
+    processor.addEffect(std::make_unique<audio::DistortionEffect>(distortion));
 
     auto delay = audio::DelayEffect(0.2, 0.2);
 

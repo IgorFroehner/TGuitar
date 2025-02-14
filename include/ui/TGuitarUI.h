@@ -11,6 +11,8 @@
 #include <ftxui/component/screen_interactive.hpp>
 #include <ftxui/dom/elements.hpp>
 
+#include <audio/AudioData.h>
+
 namespace ui {
     class Graph {
     public:
@@ -18,19 +20,18 @@ namespace ui {
 
         std::vector<int> operator()(int width, int height) const {
             std::vector<int> output(width);
-            for (int i = 0; i < width; ++i) {
-                float v = 0;
-                v += 0.1f * sin((i + shift) * 0.1f);        // NOLINT
-                v += 0.2f * sin((i + shift + 10) * 0.15f);  // NOLINT
-                v += 0.1f * sin((i + shift) * 0.03f);       // NOLINT
-                v *= height;                                // NOLINT
-                v += 0.5f * height;                         // NOLINT
+
+            // normalize between 0 and height giving that we have the max value
+            for (int i = 0; i < width && i < data.size(); ++i) {
+                const float v = data[i] / max * height;
+
                 output[i] = static_cast<int>(v);
             }
             return output;
         }
-        std::vector<double> data;
-        int shift = 0;
+
+        std::vector<float> data;
+        float max = 0.0f;
     };
 
     class TGuitarUI {
@@ -51,7 +52,7 @@ namespace ui {
         ftxui::Element Body() const;
         static ftxui::Element Footer();
 
-        void computeFFT(const std::vector<float> &samplesBlock) const;
+        void computeFFT(const std::vector<float> &samplesBlock);
 
         ftxui::Element theGraph() const;
 

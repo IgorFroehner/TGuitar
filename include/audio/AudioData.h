@@ -13,8 +13,8 @@
 constexpr unsigned int SAMPLE_RATE = 48000; // 44.1 kHz (CD quality)
 constexpr unsigned int BUFFER_SIZE = 256; // Frames per buffer
 
-// constexpr int FFT_SIZE = 1024;
-//
+constexpr size_t FFT_SIZE = 1024;
+
 // double *fftInput = (double *) fftw_malloc(sizeof(double) * FFT_SIZE);
 // fftw_complex *fftOutput = (fftw_complex *) fftw_malloc(sizeof(fftw_complex) * (FFT_SIZE / 2 + 1));
 //
@@ -26,6 +26,8 @@ namespace audio {
     extern std::atomic<float> inputLevel;
     extern std::atomic<float> outputLevel;
     extern std::atomic<bool> fftReady;
+    extern std::vector<float> g_FFTBuffer;
+    extern std::atomic<bool> g_FFTReady;
 }
 
 #endif //AUDIODATA_H
