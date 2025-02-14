@@ -89,11 +89,11 @@ int main() {
 
     ui::printDevicesAvailable(audio);
 
-    auto [inputParams, outputParams] = ui::selectDevices(audio);
+    auto [input_params, output_params] = ui::selectDevices(audio);
 
-    auto audioData = AudioData{inputParams.nChannels, outputParams.nChannels};
+    auto audioData = AudioData{input_params.nChannels, output_params.nChannels};
 
-    unsigned int bufferFrames = BUFFER_SIZE;
+    unsigned int buffer_frames = BUFFER_SIZE;
 
     // auto distortion = audio::DistortionEffect(1.0f);
     //
@@ -104,7 +104,7 @@ int main() {
     processor.addEffect(std::make_unique<audio::DelayEffect>(delay));
 
     try {
-        audio.openStream(&outputParams, &inputParams, RTAUDIO_FLOAT32, SAMPLE_RATE, &bufferFrames, &audioCallback,
+        audio.openStream(&output_params, &input_params, RTAUDIO_FLOAT32, SAMPLE_RATE, &buffer_frames, &audioCallback,
                          &audioData);
         audio.startStream();
     } catch (RtAudioErrorType &e) {

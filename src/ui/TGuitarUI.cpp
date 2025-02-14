@@ -14,16 +14,17 @@
 namespace ui {
     ftxui::Element TGuitarUI::theGraph() const {
         using namespace ftxui;
-        using namespace std::chrono_literals;
 
-        auto document = vbox({
-                            graph(std::ref(my_graph)) | flex,
-                        }) | flex | border;
+        auto graph_container = vbox({
+                                   hbox({
+                                       graph(std::ref(my_graph_))
+                                   }) | flex,
+                               }) | flex | border;
 
-        return document;
+        return graph_container;
     }
 
-    TGuitarUI::TGuitarUI() : input_level(0.0f), output_level(0.0f), running(false),
+    TGuitarUI::TGuitarUI() : input_level_(0.0f), output_level_(0.0f), running(false),
                              screen(ftxui::ScreenInteractive::Fullscreen()) {
     }
 
@@ -40,7 +41,7 @@ namespace ui {
             });
         });
 
-        const auto eventWrapper = CatchEvent(renderer, [this](const Event &event) {
+        const auto event_wrapper = CatchEvent(renderer, [this](const Event &event) {
             if (event == Event::Return || event == Event::CtrlC ||
                 event == Event::Character('q')) {
                 screen.ExitLoopClosure()();
@@ -56,7 +57,7 @@ namespace ui {
         std::thread updater(&TGuitarUI::UpdateLoop, this);
 
         // Run the event loop.
-        screen.Loop(eventWrapper);
+        screen.Loop(event_wrapper);
 
         updater.join();
     }
@@ -76,13 +77,15 @@ namespace ui {
 
     ftxui::Element TGuitarUI::Header() const {
         using namespace ftxui;
-        auto header_left = hbox(
-                               text("🎸 TGuitar") | center | bold | size(WIDTH, EQUAL, 40)
-                           ) | border;
+        auto header_left = hbox({
+                               filler(),
+                               text("🎸 TGuitar") | bold,
+                               filler(),
+                           }) | border | size(WIDTH, EQUAL, 40);
 
         auto header_right = hbox({
-                                text("🎤in: "), levelBar(input_level),
-                                text("🔈out: "), levelBar(output_level)
+                                text("🎤in: "), levelBar(input_level_),
+                                text("🔈out: "), levelBar(output_level_)
                             })
                             | center | border | flex;
 
@@ -99,8 +102,7 @@ namespace ui {
                                  text("Sidebar Content") | center,
                              })
                              | border
-                             | size(WIDTH, EQUAL, 40)
-                             | flex;
+                             | size(WIDTH, EQUAL, 40);
 
         const auto main_content = theGraph() | flex;
 
@@ -111,9 +113,10 @@ namespace ui {
                | flex;
     }
 
-    ftxui::Element TGuitarUI::Footer() const {
+    ftxui::Element TGuitarUI::Footer() {
         using namespace ftxui;
-        return filler();
+
+        return vbox({}) | size(HEIGHT, EQUAL, 1);
     }
 
     // void TGuitarUI::computeFFT(const std::vector<float> &samplesBlock) const {
@@ -152,14 +155,14 @@ namespace ui {
     void TGuitarUI::UpdateLoop() {
         using namespace std::chrono;
         while (running) {
-            const float currentInputLevel = audio::inputLevel.load(std::memory_order_relaxed);
-            const float currentOutputLevel = audio::outputLevel.load(std::memory_order_relaxed);
+            const float current_input_level = audio::inputLevel.load(std::memory_order_relaxed);
+            const float current_output_level = audio::outputLevel.load(std::memory_order_relaxed);
 
             std::this_thread::sleep_for(milliseconds(50));
-            input_level = currentInputLevel;
-            output_level = currentOutputLevel;
+            input_level_ = current_input_level;
+            output_level_ = current_output_level;
 
-            my_graph.shift++;
+            my_graph_.shift++;
 
             // if (audio::fftReady.load(std::memory_order_relaxed)) {
             //     computeFFT(fftBuffer);

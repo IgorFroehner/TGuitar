@@ -14,7 +14,7 @@
 namespace ui {
     class Graph {
     public:
-        Graph() {}
+        Graph() = default;
 
         std::vector<int> operator()(int width, int height) const {
             std::vector<int> output(width);
@@ -42,21 +42,21 @@ namespace ui {
         void start();
 
     private:
-        std::atomic<float> input_level;
-        std::atomic<float> output_level;
+        std::atomic<float> input_level_;
+        std::atomic<float> output_level_;
         std::atomic<bool> running;
         ftxui::ScreenInteractive screen;
 
         ftxui::Element Header() const;
         ftxui::Element Body() const;
-        ftxui::Element Footer() const;
+        static ftxui::Element Footer();
 
         void computeFFT(const std::vector<float> &samplesBlock) const;
 
         ftxui::Element theGraph() const;
 
         void UpdateLoop();
-        Graph my_graph;
+        Graph my_graph_;
     };
 }
 

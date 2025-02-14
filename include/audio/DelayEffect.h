@@ -21,12 +21,12 @@ namespace audio {
         void process(unsigned nFrames, float *input) override;
 
     private:
-        std::vector<float> delayBuffer_;
-        float delaySeconds_ = 0.5;
+        std::vector<float> delay_buffer_;
+        float delay_seconds_ = 0.5;
         float feedback_ = 0.5;
         bool active_ = true;
 
-        unsigned delayIndex_ = 0;
+        unsigned delay_index_ = 0;
     };
 }
 

@@ -17,7 +17,7 @@ namespace audio {
 
         ~AudioProcessor();
 
-        void applyEffects(unsigned int nFrames, float *buffer) const;
+        void applyEffects(unsigned nFrames, float *buffer) const;
 
         void addEffect(std::unique_ptr<Effect> effect);
     private:
