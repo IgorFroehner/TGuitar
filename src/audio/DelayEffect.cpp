@@ -8,6 +8,7 @@
 
 #include <vector>
 #include <audio/AudioData.h>
+#include <audio/Constants.h>
 
 namespace audio {
     DelayEffect::DelayEffect() {

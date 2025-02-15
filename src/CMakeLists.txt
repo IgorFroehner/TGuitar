@@ -3,6 +3,7 @@ set(SOURCES
         main.cpp
         audio/AudioProcessor.cpp
         audio/AudioData.cpp
+        audio/Globals.cpp
         audio/Effect.cpp
         audio/DistortionEffect.cpp
         audio/DelayEffect.cpp

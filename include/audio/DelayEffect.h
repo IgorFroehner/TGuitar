@@ -14,6 +14,7 @@ namespace audio {
     class DelayEffect : public Effect {
     public:
         DelayEffect();
+
         DelayEffect(float delayTime, float feedback);
 
         ~DelayEffect() override;

@@ -1,0 +1,14 @@
+
+[devices]
+input = "MacBook Pro Microphone"
+output = "Artics Nova 7"
+
+[effects]
+effects = ["delay", "distortion"]
+
+[effects.delay]
+seconds = 0.5
+feedback = 0.5
+
+[effects.distortion]
+timbre = 1.0

@@ -9,6 +9,8 @@
 #include <iostream>
 
 #include <audio/AudioData.h>
+#include <audio/Constants.h>
+#include <audio/Globals.h>
 #include <ui/TGuitarUI.h>
 #include <math/dj_fft.h>
 

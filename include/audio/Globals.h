@@ -4,12 +4,12 @@
  * the LICENSE file.
  */
 
-#include "audio/AudioData.h"
-
-#include <atomic>
-#include <audio/AudioProcessor.h>
+#ifndef GLOBALS_H
+#define GLOBALS_H
 
 namespace audio {
-    std::atomic inputLevel{0.0f};
-    std::atomic outputLevel{0.0f};
+    extern std::vector<float> g_FFTBuffer;
+    extern std::atomic<bool> g_FFTReady;
 }
+
+#endif //GLOBALS_H
