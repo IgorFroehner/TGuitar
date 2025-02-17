@@ -12,3 +12,7 @@ feedback = 0.5
 
 [effects.distortion]
 timbre = 1.0
+
+[metronome]
+active = true
+bpm = 120

@@ -10,6 +10,7 @@
 #include <RtAudio.h>
 #include <vector>
 
+#include "Constants.h"
 #include "Effect.h"
 
 namespace audio {
@@ -20,7 +21,9 @@ namespace audio {
 
     class AudioProcessor final {
     public:
+        // no copy or assignment for the singleton class
         AudioProcessor(const AudioProcessor &) = delete;
+
         void operator=(const AudioProcessor &) = delete;
 
         static AudioProcessor *GetInstance();
@@ -33,15 +36,21 @@ namespace audio {
 
         void addEffect(std::unique_ptr<Effect> effect);
 
+        void setMetronome(bool value);
+
+        void setBPM(unsigned bpm);
+
+        [[nodiscard]] float mixIn(unsigned currentCount) const;
+
         RtAudio *getAudioInstance() { return &audio_; }
 
-        void startStream(const std::function<void()> &wrapped_function);
+        void runStream(const std::function<void()> &interfaceFunction);
 
-        // void audioCallback(void *outputBuffer, void *inputBuffer, unsigned int nFrames,
-        //                                   double, RtAudioStreamStatus status, void *audioData);
-
+        static constexpr int clickDuration = 200; // length of the click in samples
     private:
+        // private constructor and destructor since it's a singleton class
         AudioProcessor();
+
         ~AudioProcessor();
 
         static AudioProcessor *instance_;
@@ -54,6 +63,12 @@ namespace audio {
         RtAudio::StreamParameters output_stream_parameters_;
 
         AudioData audio_data_{};
+
+        // TODO: move metronome things to a specified class
+        bool metronome = false;
+        std::vector<float> clickBuffer;
+        unsigned BPM = 120;
+        unsigned samples_per_beat_ = (SAMPLE_RATE * 60) / BPM; // 24000 samples for 120 BPM
     };
 }
 

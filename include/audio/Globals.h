@@ -10,6 +10,7 @@
 namespace audio {
     extern std::vector<float> g_FFTBuffer;
     extern std::atomic<bool> g_FFTReady;
+    extern std::atomic<unsigned> g_MetronomeCounter;
 }
 
 #endif //GLOBALS_H

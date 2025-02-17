@@ -14,16 +14,25 @@
 #include <audio/Globals.h>
 
 namespace audio {
-    AudioProcessor* AudioProcessor::instance_ = nullptr;
+    AudioProcessor *AudioProcessor::instance_ = nullptr;
     std::mutex AudioProcessor::mutex_;
 
-    AudioProcessor::AudioProcessor() = default;
+    AudioProcessor::AudioProcessor() {
+        clickBuffer.resize(clickDuration);
+        // Generate a click: a short sine burst that decays (you can design your own)
+        for (int i = 0; i < clickDuration; ++i) {
+            // Simple decaying sine: amplitude decays linearly from 1.0 to 0.0
+            const float amplitude = 1.0f - (static_cast<float>(i) / clickDuration);
+            // Using a frequency of 1kHz for the click
+            clickBuffer[i] = amplitude * std::sin(2.0f * M_PI * 1000.0f * (static_cast<float>(i) / SAMPLE_RATE));
+        }
+    }
 
     AudioProcessor::~AudioProcessor() {
         if (audio_.isStreamOpen()) audio_.closeStream();
     }
 
-    AudioProcessor * AudioProcessor::GetInstance() {
+    AudioProcessor *AudioProcessor::GetInstance() {
         std::lock_guard lock(mutex_);
         if (instance_ == nullptr) {
             instance_ = new AudioProcessor();
@@ -44,13 +53,32 @@ namespace audio {
     }
 
     void AudioProcessor::applyEffects(const unsigned int nFrames, float *buffer) const {
-        for (const auto& effect: effects_) {
+        for (const auto &effect: effects_) {
             effect->process(nFrames, buffer);
         }
     }
 
     void AudioProcessor::addEffect(std::unique_ptr<Effect> effect) {
         effects_.push_back(std::move(effect));
+    }
+
+    void AudioProcessor::setMetronome(const bool value) {
+        metronome = value;
+    }
+
+    void AudioProcessor::setBPM(const unsigned bpm) {
+        BPM = bpm;
+        samples_per_beat_ = (SAMPLE_RATE * 60) / BPM;
+    }
+
+    float AudioProcessor::mixIn(const unsigned currentCount) const {
+        if (!metronome) return 0.0;
+
+        if ((currentCount % samples_per_beat_) < clickDuration) {
+            return clickBuffer[currentCount % samples_per_beat_];
+        }
+
+        return 0.0;
     }
 
     int audioCallback(void *outputBuffer, void *inputBuffer, const unsigned int nFrames,
@@ -78,22 +106,25 @@ namespace audio {
         float peak_out = 0.0f;
 
         for (unsigned int i = 0; i < nFrames; i++) {
-            const float input_sample = clip(in[i]);
+            float processed_sample = clip(in[i]);
 
-            float abs_out_sample = fabs(input_sample);
+            float abs_out_sample = fabs(processed_sample);
             peak_out = std::max(peak_out, abs_out_sample);
 
-            g_FFTBuffer.push_back(input_sample);
+            g_FFTBuffer.push_back(processed_sample);
 
             if (g_FFTBuffer.size() >= FFT_SIZE) {
                 g_FFTReady.store(true, std::memory_order_relaxed);
             }
 
+            const auto current_count = g_MetronomeCounter.fetch_add(1, std::memory_order_relaxed);
+            processed_sample += processor->mixIn(current_count);
+
             if (audio_data_in->outputChannels == 2) {
-                out[i * 2] = input_sample;
-                out[i * 2 + 1] = input_sample;
+                out[i * 2] = processed_sample;
+                out[i * 2 + 1] = processed_sample;
             } else {
-                out[i] = input_sample;
+                out[i] = processed_sample;
             }
         }
 
@@ -102,18 +133,18 @@ namespace audio {
         return 0;
     }
 
-    void AudioProcessor::startStream(const std::function<void()> &wrapped_function) {
+    void AudioProcessor::runStream(const std::function<void()> &interfaceFunction) {
         unsigned int buffer_frames = BUFFER_SIZE;
 
         try {
-            audio_.openStream(&output_stream_parameters_, &input_stream_parameters_, RTAUDIO_FLOAT32, SAMPLE_RATE, &buffer_frames, &audioCallback,
-                             &audio_data_);
+            audio_.openStream(&output_stream_parameters_, &input_stream_parameters_, RTAUDIO_FLOAT32, SAMPLE_RATE,
+                              &buffer_frames, &audioCallback, &audio_data_);
             audio_.startStream();
         } catch (RtAudioErrorType &e) {
             throw;
         }
 
-        wrapped_function();
+        interfaceFunction();
 
         try {
             audio_.stopStream();

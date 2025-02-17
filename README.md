@@ -7,9 +7,12 @@ Play guitar like a hacker.
 
 - Features
   - [ ] Tuner
-  - [ ] Show Frequency Matrix
+  - [x] Show Frequency Matrix
   - [ ] Select Effects in the UI
   - [ ] Config File
+  - [x] Metronome
+    - [ ] Refactor it to be a separate Mix In class
+    - [ ] Metronome UI
 - Improvements
   - [ ] Initial Menu Using ftxui
 - Add Effects:

@@ -28,10 +28,13 @@ int main() {
     processor->setInputStreamParameters(input_params);
     processor->setOutputStreamParameters(output_params);
 
+    processor->setMetronome(true);
+    processor->setBPM(120);
+
     auto delay = audio::DelayEffect(0.2, 0.2);
     processor->addEffect(std::make_unique<audio::DelayEffect>(delay));
 
-    processor->startStream([] {
+    processor->runStream([] {
         const auto ui = new ui::TGuitarUI();
         ui->start();
     });

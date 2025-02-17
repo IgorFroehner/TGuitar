@@ -11,5 +11,5 @@
 namespace audio {
     std::vector<float> g_FFTBuffer;
     std::atomic<bool> g_FFTReady{false};
+    std::atomic<unsigned> g_MetronomeCounter{0};
 }
-
