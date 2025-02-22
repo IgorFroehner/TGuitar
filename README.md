@@ -11,7 +11,7 @@ Play guitar like a hacker.
   - [ ] Select Effects in the UI
   - [ ] Config File
   - [x] Metronome
-    - [ ] Refactor it to be a separate Mix In class
+    - [ ] Refactor it to be a separate MixIn class
     - [ ] Metronome UI
 - Improvements
   - [ ] Initial Menu Using ftxui

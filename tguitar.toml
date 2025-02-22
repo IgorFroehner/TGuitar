@@ -1,7 +1,6 @@
 
-[devices]
-input = "MacBook Pro Microphone"
-output = "Artics Nova 7"
+input_device = "Apple Inc.: MacBook Pro Microphone"
+output_device = "SteelSeries: Arctis Nova 7"
 
 [effects]
 effects = ["delay", "distortion"]

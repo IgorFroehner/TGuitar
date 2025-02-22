@@ -4,13 +4,20 @@
  * the LICENSE file.
  */
 
+#include <fstream>
 #include <iostream>
+#include <map>
+#include <regex>
+
 #include <rtaudio/RtAudio.h>
 
 #include <ui/TGuitarUI.h>
-#include <ui/InitialMenu.h>
 #include <audio/AudioProcessor.h>
 #include <audio/DelayEffect.h>
+#include <audio/DistortionEffect.h>
+
+#include <config/LoadConfigFile.h>
+#include <ui/InitialMenu.h>
 
 int main() {
     const auto processor = audio::AudioProcessor::GetInstance();
@@ -21,15 +28,21 @@ int main() {
         return EXIT_FAILURE;
     }
 
-    ui::printDevicesAvailable(*audio);
+    auto file_path = "/Users/igor/development/audio/tguitar/tguitar.toml";
 
-    auto [input_params, output_params] = ui::selectDevices(*audio);
+    if (config::config_exists(file_path)) {
+        std::cerr << "Found configuration file tguitar.toml, loading config from it.\n";
 
-    processor->setInputStreamParameters(input_params);
-    processor->setOutputStreamParameters(output_params);
+        config::load_config_from_file(file_path);
+    } else {
+        ui::get_config_input();
+   }
 
-    processor->setMetronome(true);
+    processor->setMetronome(false);
     processor->setBPM(120);
+
+    auto distortion = audio::DistortionEffect(1.0);
+    processor->addEffect(std::make_unique<audio::DistortionEffect>(distortion));
 
     auto delay = audio::DelayEffect(0.2, 0.2);
     processor->addEffect(std::make_unique<audio::DelayEffect>(delay));
