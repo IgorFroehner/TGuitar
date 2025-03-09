@@ -13,6 +13,7 @@ namespace audio {
     class DistortionEffect : public Effect {
     public:
         explicit DistortionEffect(float timbre);
+        explicit DistortionEffect(const std::string &name, float timbre);
 
         ~DistortionEffect() override = default;
 
@@ -23,6 +24,8 @@ namespace audio {
     private:
         float timbre_ = 1.0f;
         float depth_ = 1.0f;
+
+        static unsigned distortion_count_;
     };
 }
 

@@ -28,6 +28,8 @@ namespace audio {
         bool active_ = true;
 
         unsigned delay_index_ = 0;
+
+        static unsigned delay_count_;
     };
 }
 

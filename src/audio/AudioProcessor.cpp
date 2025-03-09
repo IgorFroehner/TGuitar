@@ -74,7 +74,7 @@ namespace audio {
     float AudioProcessor::mixIn(const unsigned currentCount) const {
         if (!metronome) return 0.0;
 
-        if ((currentCount % samples_per_beat_) < clickDuration) {
+        if (currentCount % samples_per_beat_ < clickDuration) {
             return clickBuffer[currentCount % samples_per_beat_];
         }
 

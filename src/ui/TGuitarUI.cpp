@@ -152,13 +152,6 @@ namespace ui {
         }
 
         my_graph_.max = max;
-
-        // std::vector<double> decibels(FFT_SIZE / 2 + 1);
-        // for (int k = 0; k <= FFT_SIZE / 2; k++) {
-        //     decibels[k] = (magnitudes[k] > 1e-10) ? 20 * log10(magnitudes[k]) : -100;
-        // }
-
-        // my_graph_.data = fftResult;
     }
 
     void TGuitarUI::UpdateLoop() {

@@ -12,12 +12,11 @@
 #include <rtaudio/RtAudio.h>
 
 #include <ui/TGuitarUI.h>
+#include <ui/InitialMenu.h>
 #include <audio/AudioProcessor.h>
 #include <audio/DelayEffect.h>
 #include <audio/DistortionEffect.h>
-
 #include <config/LoadConfigFile.h>
-#include <ui/InitialMenu.h>
 
 int main() {
     const auto processor = audio::AudioProcessor::GetInstance();
@@ -28,7 +27,7 @@ int main() {
         return EXIT_FAILURE;
     }
 
-    auto file_path = "/Users/igor/development/audio/tguitar/tguitar.toml";
+    auto file_path = "/Users/igor/development/audio/tguitar/atguitar.toml";
 
     if (config::config_exists(file_path)) {
         std::cerr << "Found configuration file tguitar.toml, loading config from it.\n";
@@ -39,7 +38,7 @@ int main() {
    }
 
     processor->setMetronome(false);
-    processor->setBPM(120);
+    processor->setBPM(80);
 
     auto distortion = audio::DistortionEffect(1.0);
     processor->addEffect(std::make_unique<audio::DistortionEffect>(distortion));

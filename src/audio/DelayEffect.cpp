@@ -11,13 +11,17 @@
 #include <audio/Constants.h>
 
 namespace audio {
+    unsigned DelayEffect::delay_count_ = 0;
+
     DelayEffect::DelayEffect() {
         delay_buffer_ = std::vector<float>(delay_seconds_ * SAMPLE_RATE, 0);
+        name_ = "Delay " + std::to_string(delay_count_++);
     }
 
     DelayEffect::DelayEffect(const float delayTime, const float feedback) : delay_buffer_(SAMPLE_RATE * delayTime, 0),
                                                                             delay_seconds_(delayTime),
                                                                             feedback_(feedback) {
+        name_ = "Delay " + std::to_string(delay_count_++);
     }
 
     DelayEffect::~DelayEffect() = default;

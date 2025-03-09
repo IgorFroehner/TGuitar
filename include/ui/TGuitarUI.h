@@ -7,11 +7,8 @@
 #ifndef TGUITAR_UI_H
 #define TGUITAR_UI_H
 
-#include <atomic>
 #include <ftxui/component/screen_interactive.hpp>
 #include <ftxui/dom/elements.hpp>
-
-#include <audio/AudioData.h>
 
 namespace ui {
     class Graph {

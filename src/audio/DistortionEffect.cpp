@@ -6,10 +6,15 @@
 
 #include "audio/DistortionEffect.h"
 
-#include <cmath>
-
 namespace audio {
+    unsigned DistortionEffect::distortion_count_ = 0;
+
     DistortionEffect::DistortionEffect(const float timbre) : timbre_(timbre) {
+        name_ = "Distortion " + std::to_string(distortion_count_++);
+    }
+
+    DistortionEffect::DistortionEffect(const std::string &name, const float timbre) : timbre_(timbre) {
+        name_ = name;
     }
 
     void DistortionEffect::setTimbre(const float timbre) {
@@ -17,6 +22,10 @@ namespace audio {
     }
 
     void DistortionEffect::process(const unsigned int nFrames, float *in) {
+        if (passThrough_) {
+            return;
+        }
+
         const float depth = depth_;
         const float timbre = timbre_;
         const float timbreInverse = (1 - (timbre * 0.099f)) * 10;

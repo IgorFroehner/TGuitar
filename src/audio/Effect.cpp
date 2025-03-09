@@ -12,4 +12,8 @@ namespace audio {
     Effect::~Effect() = default;
 
     void Effect::process(unsigned int nFrames, float *in) {}
+
+    void Effect::setPassThrough(const bool passThrough) {
+        passThrough_ = passThrough;
+    }
 }
