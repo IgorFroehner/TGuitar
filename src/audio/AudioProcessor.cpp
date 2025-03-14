@@ -68,6 +68,7 @@ namespace audio {
 
     void AudioProcessor::setBPM(const unsigned bpm) {
         BPM = bpm;
+        runTimeValues.metronome_bpm = bpm;
         samples_per_beat_ = (SAMPLE_RATE * 60) / BPM;
     }
 
@@ -99,7 +100,7 @@ namespace audio {
             peak = std::max(peak, abs_sample);
         }
 
-        inputLevel.store(peak, std::memory_order_relaxed);
+        runTimeValues.input_level.store(peak, std::memory_order_relaxed);
 
         const auto processor = AudioProcessor::GetInstance();
         processor->applyEffects(nFrames, in);
@@ -128,7 +129,7 @@ namespace audio {
             }
         }
 
-        outputLevel.store(peak_out, std::memory_order_relaxed);
+        runTimeValues.output_level.store(peak_out, std::memory_order_relaxed);
 
         return 0;
     }

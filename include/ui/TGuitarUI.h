@@ -40,13 +40,13 @@ namespace ui {
         void start();
 
     private:
-        std::atomic<float> input_level_;
-        std::atomic<float> output_level_;
         std::atomic<bool> running;
         ftxui::ScreenInteractive screen;
 
         ftxui::Element Header() const;
+
         ftxui::Element Body() const;
+
         static ftxui::Element Footer();
 
         void computeFFT(const std::vector<float> &samplesBlock);
@@ -54,7 +54,8 @@ namespace ui {
         ftxui::Element theGraph() const;
 
         void UpdateLoop();
-        Graph my_graph_;
+
+        Graph frequency_graph_;
     };
 }
 

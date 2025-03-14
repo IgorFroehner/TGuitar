@@ -12,8 +12,14 @@
 #include "AudioProcessor.h"
 
 namespace audio {
-    extern std::atomic<float> inputLevel;
-    extern std::atomic<float> outputLevel;
+    struct RunTimeValues {
+        std::atomic<float> input_level {0.0f};
+        std::atomic<float> output_level {0.0f};
+        std::atomic<bool> metronome {false};
+        std::atomic<unsigned> metronome_bpm {0};
+    };
+
+    extern RunTimeValues runTimeValues;
 }
 
 #endif //AUDIODATA_H

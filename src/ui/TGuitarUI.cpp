@@ -15,20 +15,7 @@
 #include <math/dj_fft.h>
 
 namespace ui {
-    ftxui::Element TGuitarUI::theGraph() const {
-        using namespace ftxui;
-
-        auto graph_container = vbox({
-                                   hbox({
-                                       graph(std::ref(my_graph_))
-                                   }) | flex,
-                               }) | flex | border;
-
-        return graph_container;
-    }
-
-    TGuitarUI::TGuitarUI() : input_level_(0.0f), output_level_(0.0f), running(false),
-                             screen(ftxui::ScreenInteractive::Fullscreen()) {
+    TGuitarUI::TGuitarUI() : running(false), screen(ftxui::ScreenInteractive::Fullscreen()) {
     }
 
     TGuitarUI::~TGuitarUI() = default;
@@ -51,12 +38,41 @@ namespace ui {
                 running = false;
                 return true;
             }
+            if (event == Event::m) {
+                const auto metronome = audio::runTimeValues.metronome.load(std::memory_order_relaxed);
+                const auto new_metronome = !metronome;
+
+                audio::runTimeValues.metronome.store(new_metronome, std::memory_order_relaxed);
+
+                const auto processor = audio::AudioProcessor::GetInstance();
+                processor->setMetronome(new_metronome);
+            }
+            if (event == Event::j) {
+                const auto bpm = audio::runTimeValues.metronome_bpm.load(std::memory_order_relaxed);
+
+                const auto new_bpm = std::min(255u, bpm + 1);
+
+                const auto processor = audio::AudioProcessor::GetInstance();
+                processor->setBPM(new_bpm);
+
+                audio::runTimeValues.metronome_bpm.store(new_bpm, std::memory_order_relaxed);
+            }
+            if (event == Event::k) {
+                const auto bpm = audio::runTimeValues.metronome_bpm.load(std::memory_order_relaxed);
+
+                const auto new_bpm = std::max(1u, bpm - 1);
+
+                const auto processor = audio::AudioProcessor::GetInstance();
+                processor->setBPM(new_bpm);
+
+                audio::runTimeValues.metronome_bpm.store(new_bpm, std::memory_order_relaxed);
+            }
             return false;
         });
 
         running = true;
 
-        // Start a thread to update the level periodically.
+        // Start a thread to update the UI periodically.
         std::thread updater(&TGuitarUI::UpdateLoop, this);
 
         // Run the event loop.
@@ -86,9 +102,16 @@ namespace ui {
                                filler(),
                            }) | border | size(WIDTH, EQUAL, 40);
 
+        const auto input_level = audio::runTimeValues.input_level.load(std::memory_order_relaxed);
+        const auto output_level = audio::runTimeValues.input_level.load(std::memory_order_relaxed);
+        const auto metronome = audio::runTimeValues.metronome.load(std::memory_order_relaxed);
+        const auto metronome_bpm = audio::runTimeValues.metronome_bpm.load(std::memory_order_relaxed);
+
         auto header_right = hbox({
-                                text("🎤in: "), levelBar(input_level_),
-                                text("🔈out: "), levelBar(output_level_)
+                                text("🎤in: "), levelBar(input_level),
+                                text("🔈out: "), levelBar(output_level),
+                                text("Metronome: "),
+                                text(metronome ? std::to_string(metronome_bpm) + " BPM" : "OFF"),
                             })
                             | center | border | flex;
 
@@ -96,6 +119,18 @@ namespace ui {
                    header_left,
                    header_right,
                }) | size(HEIGHT, EQUAL, 3);
+    }
+
+    ftxui::Element TGuitarUI::theGraph() const {
+        using namespace ftxui;
+
+        auto graph_container = vbox({
+                                   hbox({
+                                       graph(std::ref(frequency_graph_))
+                                   }) | flex,
+                               }) | flex | border;
+
+        return graph_container;
     }
 
     ftxui::Element TGuitarUI::Body() const {
@@ -119,7 +154,12 @@ namespace ui {
     ftxui::Element TGuitarUI::Footer() {
         using namespace ftxui;
 
-        return vbox({}) | size(HEIGHT, EQUAL, 1);
+        return vbox({
+                   hbox({
+                       text("m: toggle metronome  |  j: reduce metronome BPM  |  k: increase metronome BPM | q: quit")
+                   })
+               }) |
+               size(HEIGHT, EQUAL, 1);
     }
 
     void TGuitarUI::computeFFT(const std::vector<float> &samplesBlock) {
@@ -129,7 +169,7 @@ namespace ui {
             return;
         }
 
-        std::vector<std::complex<float>> fftInput;
+        std::vector<std::complex<float> > fftInput;
         fftInput.reserve(FFT_SIZE);
 
         // 3. Fill the input buffer, applying a window function (Hann window)
@@ -143,31 +183,27 @@ namespace ui {
 
         // 5. Process the FFT output: compute magnitude for each bin
         // The output is an array of FFT_SIZE/2+1 complex numbers.
-        my_graph_.data.clear();
+        frequency_graph_.data.clear();
         float max = -1.0f;
         for (size_t i = 0; i < FFT_SIZE / 2 + 1; i++) {
             float magnitude = std::abs(fftResult[i]);
             max = std::max(max, magnitude);
-            my_graph_.data.push_back(magnitude);
+            frequency_graph_.data.push_back(magnitude);
         }
 
-        my_graph_.max = max;
+        frequency_graph_.max = max;
     }
 
     void TGuitarUI::UpdateLoop() {
         using namespace std::chrono;
-        while (running) {
-            const float current_input_level = audio::inputLevel.load(std::memory_order_relaxed);
-            const float current_output_level = audio::outputLevel.load(std::memory_order_relaxed);
 
+        while (running) {
             std::this_thread::sleep_for(milliseconds(50));
-            input_level_ = current_input_level;
-            output_level_ = current_output_level;
 
             if (audio::g_FFTReady.load(std::memory_order_relaxed)) {
                 computeFFT(audio::g_FFTBuffer);
 
-                audio::g_FFTReady.store(false,std::memory_order_relaxed);
+                audio::g_FFTReady.store(false, std::memory_order_relaxed);
                 audio::g_FFTBuffer.clear();
             }
 

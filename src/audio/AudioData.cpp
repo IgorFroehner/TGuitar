@@ -6,10 +6,6 @@
 
 #include "audio/AudioData.h"
 
-#include <atomic>
-#include <audio/AudioProcessor.h>
-
 namespace audio {
-    std::atomic inputLevel{0.0f};
-    std::atomic outputLevel{0.0f};
+    RunTimeValues runTimeValues;
 }
