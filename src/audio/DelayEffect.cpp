@@ -9,6 +9,7 @@
 #include <vector>
 #include <audio/AudioData.h>
 #include <audio/Constants.h>
+#include <ui/Utils.h>
 
 namespace audio {
     unsigned DelayEffect::delay_count_ = 0;
@@ -24,6 +25,12 @@ namespace audio {
         name_ = "Delay " + std::to_string(delay_count_++);
     }
 
+    DelayEffect::DelayEffect(const std::string &name, float delayTime, float feedback) : delay_buffer_(SAMPLE_RATE * delayTime, 0),
+                                                                                   delay_seconds_(delayTime),
+                                                                                   feedback_(feedback) {
+        name_ = name;
+    }
+
     DelayEffect::~DelayEffect() = default;
 
 
@@ -33,5 +40,21 @@ namespace audio {
             delay_index_ = (delay_index_ + 1) % delay_buffer_.size();
             input[i] = input[i] + feedback_ * delay_buffer_[delay_index_];
         }
+    }
+
+    ftxui::Element DelayEffect::toUI() const {
+        using namespace ftxui;
+
+        auto effect = vbox({
+                   text(name_ + ":"),
+                   text("  Delay Time = " + ui::floatToString(delay_seconds_)),
+                   text("  Feedback = " + ui::floatToString(delay_seconds_))
+               }) | bold;
+
+        if (passThrough_) {
+            return effect | color(Color::GrayDark);
+        }
+
+        return effect;
     }
 }

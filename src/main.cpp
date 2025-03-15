@@ -40,10 +40,12 @@ int main() {
     processor->setMetronome(false);
     processor->setBPM(80);
 
-    auto distortion = audio::DistortionEffect(1.0);
+    auto distortion = audio::DistortionEffect("Distortion", 1.0);
+    distortion.setPassThrough(true);
     processor->addEffect(std::make_unique<audio::DistortionEffect>(distortion));
 
-    auto delay = audio::DelayEffect(0.2, 0.2);
+    auto delay = audio::DelayEffect("Delay", 0.2, 0.2);
+    delay.setPassThrough(true);
     processor->addEffect(std::make_unique<audio::DelayEffect>(delay));
 
     processor->runStream([] {

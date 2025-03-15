@@ -11,9 +11,20 @@ namespace audio {
 
     Effect::~Effect() = default;
 
+    void Effect::applyEffect(const unsigned int nFrames, float *in) {
+        if (passThrough_) {
+            return;
+        }
+        process(nFrames, in);
+    }
+
     void Effect::process(unsigned int nFrames, float *in) {}
 
     void Effect::setPassThrough(const bool passThrough) {
         passThrough_ = passThrough;
+    }
+
+    ftxui::Element Effect::toUI() const {
+        return ftxui::text("Effect");
     }
 }

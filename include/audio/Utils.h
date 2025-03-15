@@ -4,8 +4,8 @@
  * the LICENSE file.
  */
 
-#ifndef UTILS_H
-#define UTILS_H
+#ifndef AUDIO_UTILS_H
+#define AUDIO_UTILS_H
 
 namespace audio {
     enum DeviceType {
@@ -20,4 +20,4 @@ namespace audio {
     }
 }
 
-#endif //UTILS_H
+#endif //AUDIO_UTILS_H

@@ -59,6 +59,8 @@ namespace ui {
 
         ftxui::Element Body() const;
 
+        ftxui::Element Sidebar() const;
+
         static ftxui::Element Footer();
 
         void computeFFT(const std::vector<float> &samplesBlock);

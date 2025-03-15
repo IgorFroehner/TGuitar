@@ -11,21 +11,23 @@
 #include <audio/Effect.h>
 
 namespace audio {
-    class DelayEffect : public Effect {
+    class DelayEffect final : public Effect {
     public:
         DelayEffect();
 
         DelayEffect(float delayTime, float feedback);
+        DelayEffect(const std::string &name, float delayTime, float feedback);
 
         ~DelayEffect() override;
 
         void process(unsigned nFrames, float *input) override;
 
+        ftxui::Element toUI() const override;
+
     private:
         std::vector<float> delay_buffer_;
         float delay_seconds_ = 0.5;
         float feedback_ = 0.5;
-        bool active_ = true;
 
         unsigned delay_index_ = 0;
 

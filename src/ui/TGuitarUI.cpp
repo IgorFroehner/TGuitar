@@ -133,14 +133,31 @@ namespace ui {
         return graph_container;
     }
 
+    ftxui::Element TGuitarUI::Sidebar() const {
+        using namespace ftxui;
+
+        const auto processor = audio::AudioProcessor::GetInstance();
+        const auto &effects = processor->getEffects();
+
+        std::vector<Element> effect_elements;
+        effect_elements.reserve(effects.size());
+        for (const auto &effect: effects) {
+            effect_elements.push_back(effect->toUI());
+        }
+
+        return vbox({
+                   text("Effects:") | center,
+                   separator(),
+                   vbox(effect_elements)
+               })
+               | border
+               | size(WIDTH, EQUAL, 40);
+    }
+
     ftxui::Element TGuitarUI::Body() const {
         using namespace ftxui;
 
-        const auto sidebar = vbox({
-                                 text("Sidebar Content") | center,
-                             })
-                             | border
-                             | size(WIDTH, EQUAL, 40);
+        const auto sidebar = Sidebar();
 
         const auto main_content = theGraph() | flex;
 
@@ -208,7 +225,7 @@ namespace ui {
                 sum += magnitude;
                 count++;
             }
-            band_magnitudes[band] = (count > 0) ? sum / count : 0.0f;
+            band_magnitudes[band] = count > 0 ? sum / count : 0.0f;
             max = std::max(max, band_magnitudes[band]);
         }
 

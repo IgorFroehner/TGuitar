@@ -8,9 +8,10 @@
 #define DISTORTIONEFFECT_H
 
 #include <audio/Effect.h>
+#include <ftxui/dom/elements.hpp>
 
 namespace audio {
-    class DistortionEffect : public Effect {
+    class DistortionEffect final : public Effect {
     public:
         explicit DistortionEffect(float timbre);
         explicit DistortionEffect(const std::string &name, float timbre);
@@ -20,6 +21,8 @@ namespace audio {
         void setTimbre(float timbre);
 
         void process(unsigned int nFrames, float *in) override;
+
+        ftxui::Element toUI() const override;
 
     private:
         float timbre_ = 1.0f;

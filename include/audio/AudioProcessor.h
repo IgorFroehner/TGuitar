@@ -46,6 +46,8 @@ namespace audio {
 
         void runStream(const std::function<void()> &interfaceFunction);
 
+        const std::vector<std::unique_ptr<Effect>>& getEffects() const;
+
         static constexpr int clickDuration = 200; // length of the click in samples
     private:
         // private constructor and destructor since it's a singleton class

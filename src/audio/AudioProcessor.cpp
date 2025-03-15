@@ -54,7 +54,7 @@ namespace audio {
 
     void AudioProcessor::applyEffects(const unsigned int nFrames, float *buffer) const {
         for (const auto &effect: effects_) {
-            effect->process(nFrames, buffer);
+            effect->applyEffect(nFrames, buffer);
         }
     }
 
@@ -154,5 +154,9 @@ namespace audio {
         }
 
         if (audio_.isStreamOpen()) audio_.closeStream();
+    }
+
+    const std::vector<std::unique_ptr<Effect>>& AudioProcessor::getEffects() const {
+        return effects_;
     }
 }

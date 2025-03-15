@@ -7,6 +7,7 @@
 #ifndef EFFECT_H
 #define EFFECT_H
 #include <string>
+#include <ftxui/dom/elements.hpp>
 
 namespace audio {
     class Effect {
@@ -15,9 +16,13 @@ namespace audio {
 
         virtual ~Effect();
 
+        void applyEffect(unsigned int nFrames, float *in);
+
         virtual void process(unsigned int nFrames, float *in);
 
         virtual void setPassThrough(bool);
+
+        virtual ftxui::Element toUI() const;
 
     protected:
         std::string name_ = "Effect";

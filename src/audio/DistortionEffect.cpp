@@ -6,6 +6,9 @@
 
 #include "audio/DistortionEffect.h"
 
+#include <ftxui/component/component.hpp>
+#include <ui/Utils.h>
+
 namespace audio {
     unsigned DistortionEffect::distortion_count_ = 0;
 
@@ -37,5 +40,21 @@ namespace audio {
             in[i] = tanh(in[i] * (timbre + 1.0f));
             in[i] = in[i] * 0.125f;
         }
+    }
+
+    ftxui::Element DistortionEffect::toUI() const {
+        using namespace ftxui;
+
+        auto effect = vbox({
+                   text(name_ + ":"),
+                   text("  Timbre = " + ui::floatToString(timbre_)),
+                   text("  Depth = " + ui::floatToString(depth_))
+               }) |
+               bold;
+
+        if (passThrough_) {
+            return effect | color(Color::GrayDark);
+        }
+        return effect;
     }
 }
