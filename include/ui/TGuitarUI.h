@@ -15,15 +15,27 @@ namespace ui {
     public:
         Graph() = default;
 
-        std::vector<int> operator()(int width, int height) const {
-            std::vector<int> output(width);
+        std::vector<int> operator()(const int width, const int height) const {
+            std::vector output(width, 0);
+            if (data.empty() || max == 0.0f) return output;
 
-            // normalize between 0 and height giving that we have the max value
-            for (int i = 0; i < width && i < data.size(); ++i) {
-                const float v = data[i] / max * height;
+            const int band_width = width / data.size();
+            int remaining = width % data.size();
 
-                output[i] = static_cast<int>(v);
+            const auto max = std::max(0.05f, this->max);
+
+            int index = 0;
+            for (const float band : data) {
+                const int fill_width = band_width + (remaining > 0 ? 1 : 0);
+                remaining--;
+
+                const int value = static_cast<int>(band / max * height);
+
+                for (int j = 0; j < fill_width && index < width; ++j) {
+                    output[index++] = value;
+                }
             }
+
             return output;
         }
 

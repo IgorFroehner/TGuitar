@@ -169,28 +169,50 @@ namespace ui {
             return;
         }
 
-        std::vector<std::complex<float> > fftInput;
-        fftInput.reserve(FFT_SIZE);
+        std::vector<std::complex<float> > fft_input;
+        fft_input.reserve(FFT_SIZE);
 
         // 3. Fill the input buffer, applying a window function (Hann window)
         for (size_t i = 0; i < FFT_SIZE; i++) {
-            double hannWindow = 0.5 * (1 - cos((2.0f * M_PI * static_cast<float>(i)) / (FFT_SIZE - 1)));
-            fftInput.emplace_back(samplesBlock[i] * hannWindow);
+            double hann_window = 0.5 * (1 - cos((2.0f * M_PI * static_cast<float>(i)) / (FFT_SIZE - 1)));
+            fft_input.emplace_back(samplesBlock[i] * hann_window);
         }
 
         // 4. Execute the FFT
-        auto fftResult = fft1d(fftInput, dj::fft_dir::DIR_FWD);
+        const auto fft_result = fft1d(fft_input, dj::fft_dir::DIR_FWD);
 
-        // 5. Process the FFT output: compute magnitude for each bin
-        // The output is an array of FFT_SIZE/2+1 complex numbers.
-        frequency_graph_.data.clear();
+        // Frequency band ranges in terms of bin indices
+        constexpr float bin_size = SAMPLE_RATE / static_cast<float>(FFT_SIZE); // Hz per bin
+        const std::vector<std::pair<int, int> > band_bins = {
+            {static_cast<int>(20 / bin_size), static_cast<int>(60 / bin_size)},
+            // Sub-bass (20 - 60 Hz) cutting from 0 to 20 Hz
+            {static_cast<int>(60 / bin_size), static_cast<int>(250 / bin_size)}, // Bass (60 - 250 Hz)
+            {static_cast<int>(250 / bin_size), static_cast<int>(500 / bin_size)}, // Low Midrange (250 - 500 Hz)
+            {static_cast<int>(500 / bin_size), static_cast<int>(2000 / bin_size)}, // Midrange (500 - 2000 Hz)
+            {static_cast<int>(2000 / bin_size), static_cast<int>(4000 / bin_size)}, // Upper Midrange (2k - 4k Hz)
+            {static_cast<int>(4000 / bin_size), static_cast<int>(6000 / bin_size)}, // Presence (4k - 6k Hz)
+            {static_cast<int>(6000 / bin_size), static_cast<int>(20000 / bin_size)} // Brilliance (6k - 20k Hz)
+        };
+
+        std::vector band_magnitudes(band_bins.size(), 0.0f);
+
+        // Compute average magnitude for each band
+        // frequency_graph_.data.clear();
         float max = -1.0f;
-        for (size_t i = 0; i < FFT_SIZE / 2 + 1; i++) {
-            float magnitude = std::abs(fftResult[i]);
-            max = std::max(max, magnitude);
-            frequency_graph_.data.push_back(magnitude);
+        for (size_t band = 0; band < band_bins.size(); ++band) {
+            float sum = 0.0f;
+            int count = 0;
+            for (int i = band_bins[band].first; i <= band_bins[band].second && i < FFT_SIZE / 2; ++i) {
+                float magnitude = std::abs(fft_result[i]) / FFT_SIZE; // Normalize
+                magnitude = 20 * log10(1 + magnitude); // Convert to dB scale
+                sum += magnitude;
+                count++;
+            }
+            band_magnitudes[band] = (count > 0) ? sum / count : 0.0f;
+            max = std::max(max, band_magnitudes[band]);
         }
 
+        frequency_graph_.data = band_magnitudes;
         frequency_graph_.max = max;
     }
 
