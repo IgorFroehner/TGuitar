@@ -7,6 +7,7 @@ set(SOURCES
         audio/Effect.cpp
         audio/DistortionEffect.cpp
         audio/DelayEffect.cpp
+        audio/Metronome.cpp
         ui/InitialMenu.cpp
         ui/TGuitarUI.cpp
 )

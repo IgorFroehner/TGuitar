@@ -27,25 +27,19 @@ int main() {
         return EXIT_FAILURE;
     }
 
-    auto file_path = "/Users/igor/development/audio/tguitar/atguitar.toml";
+    const auto file_path = "/Users/igor/development/audio/tguitar/tguitar.toml";
 
-    if (config::config_exists(file_path)) {
-        std::cerr << "Found configuration file tguitar.toml, loading config from it.\n";
-
-        config::load_config_from_file(file_path);
-    } else {
+    if (!config::load_config_from_file(file_path)) {
         ui::get_config_input();
-   }
+    }
 
-    processor->setMetronome(false);
-    processor->setBPM(80);
+    // processor->setMetronome(false);
+    // processor->setBPM(80);
 
     auto distortion = audio::DistortionEffect("Distortion", 1.0);
-    distortion.setPassThrough(true);
     processor->addEffect(std::make_unique<audio::DistortionEffect>(distortion));
 
     auto delay = audio::DelayEffect("Delay", 0.2, 0.2);
-    delay.setPassThrough(true);
     processor->addEffect(std::make_unique<audio::DelayEffect>(delay));
 
     processor->runStream([] {

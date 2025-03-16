@@ -10,8 +10,8 @@
 #include <RtAudio.h>
 #include <vector>
 
-#include "Constants.h"
 #include "Effect.h"
+#include "Metronome.h"
 
 namespace audio {
     struct AudioData {
@@ -50,7 +50,6 @@ namespace audio {
 
         static constexpr int clickDuration = 200; // length of the click in samples
     private:
-        // private constructor and destructor since it's a singleton class
         AudioProcessor();
 
         ~AudioProcessor();
@@ -66,11 +65,7 @@ namespace audio {
 
         AudioData audio_data_{};
 
-        // TODO: move metronome things to a specified class
-        bool metronome = false;
-        std::vector<float> clickBuffer;
-        unsigned BPM = 120;
-        unsigned samples_per_beat_ = (SAMPLE_RATE * 60) / BPM; // 24000 samples for 120 BPM
+        Metronome metronome_;
     };
 }
 

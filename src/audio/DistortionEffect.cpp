@@ -25,10 +25,6 @@ namespace audio {
     }
 
     void DistortionEffect::process(const unsigned int nFrames, float *in) {
-        if (passThrough_) {
-            return;
-        }
-
         const float depth = depth_;
         const float timbre = timbre_;
         const float timbreInverse = (1 - (timbre * 0.099f)) * 10;

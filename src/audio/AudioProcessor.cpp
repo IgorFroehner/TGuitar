@@ -17,15 +17,7 @@ namespace audio {
     AudioProcessor *AudioProcessor::instance_ = nullptr;
     std::mutex AudioProcessor::mutex_;
 
-    AudioProcessor::AudioProcessor() {
-        clickBuffer.resize(clickDuration);
-        // Generate a click: a short sine burst that decays (you can design your own)
-        for (int i = 0; i < clickDuration; ++i) {
-            // Simple decaying sine: amplitude decays linearly from 1.0 to 0.0
-            const float amplitude = 1.0f - (static_cast<float>(i) / clickDuration);
-            // Using a frequency of 1kHz for the click
-            clickBuffer[i] = amplitude * std::sin(2.0f * M_PI * 1000.0f * (static_cast<float>(i) / SAMPLE_RATE));
-        }
+    AudioProcessor::AudioProcessor() : metronome_(Metronome()) {
     }
 
     AudioProcessor::~AudioProcessor() {
@@ -63,23 +55,15 @@ namespace audio {
     }
 
     void AudioProcessor::setMetronome(const bool value) {
-        metronome = value;
+        metronome_.setActive(value);
     }
 
     void AudioProcessor::setBPM(const unsigned bpm) {
-        BPM = bpm;
-        runTimeValues.metronome_bpm = bpm;
-        samples_per_beat_ = (SAMPLE_RATE * 60) / BPM;
+        metronome_.setBPM(bpm);
     }
 
     float AudioProcessor::mixIn(const unsigned currentCount) const {
-        if (!metronome) return 0.0;
-
-        if (currentCount % samples_per_beat_ < clickDuration) {
-            return clickBuffer[currentCount % samples_per_beat_];
-        }
-
-        return 0.0;
+        return metronome_.mixIn(currentCount);
     }
 
     int audioCallback(void *outputBuffer, void *inputBuffer, const unsigned int nFrames,
@@ -119,7 +103,7 @@ namespace audio {
             }
 
             const auto current_count = g_MetronomeCounter.fetch_add(1, std::memory_order_relaxed);
-            processed_sample += processor->mixIn(current_count);
+            processed_sample = processor->mixIn(current_count);
 
             if (audio_data_in->outputChannels == 2) {
                 out[i * 2] = processed_sample;
@@ -156,7 +140,7 @@ namespace audio {
         if (audio_.isStreamOpen()) audio_.closeStream();
     }
 
-    const std::vector<std::unique_ptr<Effect>>& AudioProcessor::getEffects() const {
+    const std::vector<std::unique_ptr<Effect> > &AudioProcessor::getEffects() const {
         return effects_;
     }
 }
