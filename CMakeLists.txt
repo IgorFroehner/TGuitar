@@ -3,6 +3,8 @@ project(tguitar)
 
 set(CMAKE_CXX_STANDARD 17)
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 # requirements
 find_package(RtAudio REQUIRED)
 find_package(ftxui REQUIRED)
